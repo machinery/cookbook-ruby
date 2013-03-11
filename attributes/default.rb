@@ -1,9 +1,13 @@
-
 default["ruby"] = {
   "users" => [{
     "user"     => "root",
-    "versions" => ["2.0.0-p0"],
-    "prefix"   => "/usr/local/rubies"
+    "prefix"   => "/usr/local/rubies",
+    "versions" => [{
+      "version" => "2.0.0-p0",
+      "gems"    => [
+        {"gem" => "bundler"}
+      ]
+    }]
   }]
 }
 

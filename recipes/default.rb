@@ -11,36 +11,47 @@ include_recipe "build-essential"
   libffi-dev
 ].each { |pkg| package pkg }
 
-node["ruby"]["users"].each do |config|
+node["ruby"]["users"].each do |u_config|
 
-  config["versions"].each do |version|
+  u_config["versions"].each do |v_config|
 
-    installation_path = File.join(config["prefix"], version)
-    major_version     = version.match(/^([0-9]\.[0-9])/)[1]
+    installation_path = File.join(u_config["prefix"], v_config["version"])
+    major_version     = v_config["version"].match(/^([0-9]\.[0-9])/)[1]
 
-    remote_file "/tmp/ruby-#{version}.tar.gz" do
+    remote_file "/tmp/ruby-#{v_config["version"]}.tar.gz" do
       source "http://ftp.ruby-lang.org/pub/ruby/#{major_version}/" +
-             "ruby-#{version}.tar.gz"
+             "ruby-#{v_config["version"]}.tar.gz"
 
       not_if do
-        File.exist?("/tmp/ruby-#{version}.tar.gz") ||
+        File.exist?("/tmp/ruby-#{v_config["version"]}.tar.gz") ||
         File.exist?(File.join(installation_path, "bin/ruby"))
       end
     end
 
-    bash "install Ruby #{version}" do
+    bash "install Ruby #{v_config["version"]}" do
       user "root"
       cwd "/tmp"
       code <<-EOH
-        tar -zxf ruby-#{version}.tar.gz
-        cd ruby-#{version}
+        tar -zxf ruby-#{v_config["version"]}.tar.gz
+        cd ruby-#{v_config["version"]}
         ./configure --prefix=#{installation_path}
         make && make install
-        chown -R #{config["user"]}:#{config["user"]} #{config["prefix"]}
       EOH
 
       not_if { File.exist?(File.join(installation_path, "bin/ruby")) }
     end
+
+    (v_config["gems"] || []).each do |g_config|
+      gem_package g_config["gem"] do
+        gem_binary File.join(installation_path, "bin/gem")
+        version g_config["version"]
+      end
+    end
+  end
+
+  bash "update #{u_config["user"]} permissions" do
+    user "root"
+    code "chown -R #{u_config["user"]}:#{u_config["user"]} #{u_config["prefix"]}"
   end
 end
 
