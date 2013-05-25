@@ -31,9 +31,14 @@ Installs Ruby from source.
 {
   "ruby" : {
     "users" : [{
-      "user"     : "deployer",
-      "prefix"   : "/home/deployer/rubies",
-      "versions" : ["2.0.0-p0", "1.9.3-p392"]
+      "user" : "deployer",
+      "prefix" : "/home/deployer/rubies",
+      "versions": [{
+        "version" : "2.0.0-p195",
+        "gems" : [{
+          "gem" : "bundler", "version" : "~> 1.3.5"
+        }]
+      }]
     }]
   },
 
